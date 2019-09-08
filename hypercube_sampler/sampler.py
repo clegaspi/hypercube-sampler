@@ -1,7 +1,9 @@
-from hypercube_sampler.constraints import Constraint
-from scipy.optimize import minimize, NonlinearConstraint
-import numpy as np
 from functools import partial
+
+from scipy.optimize import minimize, NonlinearConstraint, Bounds
+import numpy as np
+
+from hypercube_sampler.constraints import Constraint
 
 
 class Sampler:
@@ -106,27 +108,48 @@ class Sampler:
             solution = minimize(
                 lambda m: -m,
                 [0.0],
-                constraints=constraint_objs
+                constraints=constraint_objs,
+                bounds=Bounds([0], [np.sqrt(constraint.n_dim)])
             )
+            if not solution.success or solution.x[0] < 1e-8:
+                # If unsuccessful minimization or we're on the edge of the
+                # polytope and can't move that direction, find another direction
+                continue
             max_magnitude = solution.x[0]
 
             # Select random magnitude in range from 0 to max magnitude
             rand_magnitude = np.random.uniform(0, max_magnitude)
             n_retries = 10
-            while not constraint.apply(get_next_point(rand_magnitude)) \
-                    and n_retries > 0:
+            next_point = get_next_point(rand_magnitude)
+            while not Sampler.is_valid_point(constraint, next_point) and n_retries > 0:
                 # If the magnitude selected falls outside of the polytope,
                 # try another, up to 10 times.
                 rand_magnitude = np.random.uniform(0, max_magnitude)
+                next_point = get_next_point(rand_magnitude)
                 n_retries -= 1
 
-            if not constraint.apply(get_next_point(rand_magnitude)):
+            if not Sampler.is_valid_point(constraint, next_point):
                 # If we couldn't find a good step to make in this direction,
                 # pick a new direction.
                 continue
 
             # Step to new point and pick a new direction
-            current_pt = get_next_point(rand_magnitude)
+            current_pt = next_point
             samples.append(current_pt.tolist())
 
         return samples
+    
+    @staticmethod
+    def is_valid_point(constraint: Constraint, point: np.array):
+        """
+        Determines if a selected point is on the hypercube and
+        meets constraints.
+
+        :param constraint: constraint object
+        :param point: point to check
+        :return: True if on the hypercube and meets constraints,
+            false otherwise
+        """
+        return constraint.apply(point) \
+            and np.all(point >= 0) \
+            and np.all(point <= 1)
