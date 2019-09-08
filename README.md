@@ -3,6 +3,7 @@ Sampling from a polytope on a hypercube with non-linear constraints.
 
 To install:
 - Clone repository
+- Create your favorite virtual environment with python 3.7
 - `pip install --editable .`
 
 To run:
