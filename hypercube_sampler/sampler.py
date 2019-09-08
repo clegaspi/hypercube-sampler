@@ -1,4 +1,4 @@
-from constraints import Constraint
+from hypercube_sampler.constraints import Constraint
 from scipy.optimize import minimize, NonlinearConstraint
 import numpy as np
 from functools import partial
@@ -127,6 +127,6 @@ class Sampler:
 
             # Step to new point and pick a new direction
             current_pt = get_next_point(rand_magnitude)
-            samples.append(list(current_pt))
+            samples.append(current_pt.tolist())
 
         return samples
