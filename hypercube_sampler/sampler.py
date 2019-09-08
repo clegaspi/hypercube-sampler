@@ -51,7 +51,7 @@ class Sampler:
         )
 
     @staticmethod
-    def sample(constraint_file: str, n_samples: int) -> list:
+    def sample(constraint_file: str, n_samples: int, step_tol: float = 1e-8) -> list:
         """
         Get samples from a polytope created on a hypercube from nonlinear constraints
         stored in a constraint definition file. Randomly samples points using
@@ -59,6 +59,8 @@ class Sampler:
 
         :param constraint_file: file path to constraint definition file
         :param n_samples: number of samples to return
+        :param step_tol: magnitude tolerance for step size. If step is smaller
+            than the magnitude, will be considered the same point.
         :return: list of lists representing valid points on the polytope
         """
 
@@ -81,7 +83,8 @@ class Sampler:
             result = minimize(
                 lambda x: 0,
                 [0.5]*constraint.n_dim,
-                constraints=constraint_objs
+                constraints=constraint_objs,
+                bounds=Bounds([0]*constraint.n_dim, [1]*constraint.n_dim)
             )
             current_pt = result.x
         else:
@@ -94,9 +97,7 @@ class Sampler:
             step_vector = np.random.uniform(-1, 1, size=(constraint.n_dim,))
             step_vector = step_vector / np.linalg.norm(step_vector)
 
-            # Find maximum magnitude for step within polytope
-            get_next_point = partial(Sampler._step_to_next_point, current_pt, step_vector)
-
+            # Find minimum and maximum magnitude for step within polytope
             # Assumes g(x) >= 0 form of constraint equation
             constraint_objs = [
                 NonlinearConstraint(
@@ -105,30 +106,43 @@ class Sampler:
                     0, np.inf)
                 for func in constraint_funcs
             ]
-            solution = minimize(
+            min_solution = minimize(
+                lambda m: m,
+                [0.0],
+                constraints=constraint_objs,
+                bounds=Bounds([-np.sqrt(constraint.n_dim)], [0])
+            )
+            max_solution = minimize(
                 lambda m: -m,
                 [0.0],
                 constraints=constraint_objs,
                 bounds=Bounds([0], [np.sqrt(constraint.n_dim)])
             )
-            if not solution.success or solution.x[0] < 1e-8:
+            if not min_solution.success or not max_solution.success or \
+                    (abs(min_solution.x[0]) < step_tol-8 and
+                     abs(max_solution.x[0]) < step_tol):
                 # If unsuccessful minimization or we're on the edge of the
-                # polytope and can't move that direction, find another direction
+                # polytope and can't move in either direction, find another direction
                 continue
-            max_magnitude = solution.x[0]
+            min_magnitude = min_solution.x[0]
+            max_magnitude = max_solution.x[0]
 
             # Select random magnitude in range from 0 to max magnitude
-            rand_magnitude = np.random.uniform(0, max_magnitude)
+            get_next_point = partial(Sampler._step_to_next_point, current_pt, step_vector)
+            rand_magnitude = np.random.uniform(min_magnitude, max_magnitude)
             n_retries = 10
             next_point = get_next_point(rand_magnitude)
-            while not Sampler._is_valid_point(constraint, next_point) and n_retries > 0:
-                # If the magnitude selected falls outside of the polytope,
-                # try another, up to 10 times.
-                rand_magnitude = np.random.uniform(0, max_magnitude)
+            while (not Sampler._is_valid_point(constraint, next_point) or
+                   abs(rand_magnitude) < step_tol) and n_retries > 0:
+                # If the new point selected falls outside of the polytope or hypercube,
+                # or is the same as the starting point, try another magnitude,
+                # up to 10 times.
+                rand_magnitude = np.random.uniform(min_magnitude, max_magnitude)
                 next_point = get_next_point(rand_magnitude)
                 n_retries -= 1
 
-            if not Sampler._is_valid_point(constraint, next_point):
+            if (not Sampler._is_valid_point(constraint, next_point) or
+                    abs(rand_magnitude) < step_tol):
                 # If we couldn't find a good step to make in this direction,
                 # pick a new direction.
                 continue
