@@ -121,14 +121,14 @@ class Sampler:
             rand_magnitude = np.random.uniform(0, max_magnitude)
             n_retries = 10
             next_point = get_next_point(rand_magnitude)
-            while not Sampler.is_valid_point(constraint, next_point) and n_retries > 0:
+            while not Sampler._is_valid_point(constraint, next_point) and n_retries > 0:
                 # If the magnitude selected falls outside of the polytope,
                 # try another, up to 10 times.
                 rand_magnitude = np.random.uniform(0, max_magnitude)
                 next_point = get_next_point(rand_magnitude)
                 n_retries -= 1
 
-            if not Sampler.is_valid_point(constraint, next_point):
+            if not Sampler._is_valid_point(constraint, next_point):
                 # If we couldn't find a good step to make in this direction,
                 # pick a new direction.
                 continue
@@ -140,7 +140,7 @@ class Sampler:
         return samples
     
     @staticmethod
-    def is_valid_point(constraint: Constraint, point: np.array):
+    def _is_valid_point(constraint: Constraint, point: np.array):
         """
         Determines if a selected point is on the hypercube and
         meets constraints.
