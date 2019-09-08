@@ -1,9 +1,10 @@
 import re
 
+
 class Constraint:
     """Constraints loaded from a file."""
 
-    def __init__(self, fname):
+    def __init__(self, fname: str):
         """
         Construct a Constraint object from a constraints file
 
@@ -42,6 +43,9 @@ class Constraint:
         return self.n_dim
 
     def get_constraint_funcs(self):
+        """Get the compile constraint functions that return values of the
+        constraint equations
+        """
         return self._value_exprs
 
     def evaluate_constraints(self, x):
