@@ -119,7 +119,7 @@ class Sampler:
                 bounds=Bounds([0], [np.sqrt(constraint.n_dim)])
             )
             if not min_solution.success or not max_solution.success or \
-                    (abs(min_solution.x[0]) < step_tol-8 and
+                    (abs(min_solution.x[0]) < step_tol and
                      abs(max_solution.x[0]) < step_tol):
                 # If unsuccessful minimization or we're on the edge of the
                 # polytope and can't move in either direction, find another direction
