@@ -1,6 +1,7 @@
 import click
 
 from hypercube_sampler.sampler import Sampler
+from hypercube_sampler.constraints import Constraint
 
 
 @click.command()
@@ -12,7 +13,9 @@ def main(input_file, output_file, n_results):
     constraint input file INPUT_FILE and outputs N_RESULTS number
     of sampled points to OUTPUT_FILE.
     """
-    samples = Sampler.sample(input_file, int(n_results))
+    constraint = Constraint(input_file)
+    sampler = Sampler(constraint)
+    samples = sampler.sample(int(n_results))
 
     with open(output_file, 'w') as f:
         for point in samples:

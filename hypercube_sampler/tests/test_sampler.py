@@ -13,18 +13,20 @@ class SamplerTest(unittest.TestCase):
     def test_sampler_good_starting_point(self):
         """Test running sampler with valid starting point"""
         input_path = os.path.join(TEST_DIR, '2d.txt')
-        results = Sampler.sample(input_path, 100)
-        self.assertEqual(len(results), 100)
         constraint = Constraint(input_path)
+        sampler = Sampler(constraint)
+        results = sampler.sample(100)
+        self.assertEqual(len(results), 100)
         self.assertTrue(all(constraint.apply(pt) for pt in results))
 
     def test_sampler_bad_starting_point(self):
         """Test running sampler with invalid starting point, where
         the sampler has to find an edge first"""
         input_path = os.path.join(TEST_DIR, '2d-badstart.txt')
-        results = Sampler.sample(input_path, 100)
-        self.assertEqual(len(results), 100)
         constraint = Constraint(input_path)
+        sampler = Sampler(constraint)
+        results = sampler.sample(100)
+        self.assertEqual(len(results), 100)
         self.assertTrue(all(constraint.apply(pt) for pt in results))
 
     def test_apply_constraint_func(self):
@@ -72,25 +74,26 @@ class SamplerTest(unittest.TestCase):
         """Test if points lie in the unit hypercube and satisfy constraints"""
         input_path = os.path.join(TEST_DIR, '2d.txt')
         constraint = Constraint(input_path)
+        sampler = Sampler(constraint)
 
         # Satisfies constraints
         self.assertTrue(
-            Sampler._is_valid_point(constraint, np.array([0.5, 0.5]))
+            sampler._is_valid_point(np.array([0.5, 0.5]))
         )
         # Does not satisfy constraints
         self.assertFalse(
-            Sampler._is_valid_point(constraint, np.array([0.1, 0.1]))
+            sampler._is_valid_point(np.array([0.1, 0.1]))
         )
         # Outside cube
         self.assertFalse(
-            Sampler._is_valid_point(constraint, np.array([-0.1, 0.1]))
+            sampler._is_valid_point(np.array([-0.1, 0.1]))
         )
         self.assertFalse(
-            Sampler._is_valid_point(constraint, np.array([0.1, -0.1]))
+            sampler._is_valid_point(np.array([0.1, -0.1]))
         )
         self.assertFalse(
-            Sampler._is_valid_point(constraint, np.array([1.1, 0.1]))
+            sampler._is_valid_point(np.array([1.1, 0.1]))
         )
         self.assertFalse(
-            Sampler._is_valid_point(constraint, np.array([0.1, 1.1]))
+            sampler._is_valid_point(np.array([0.1, 1.1]))
         )
