@@ -131,7 +131,7 @@ class Sampler:
             self._current_pt = next_point
             successful_step = True
 
-        return self._current_pt
+        return self._current_pt.tolist()
 
     @staticmethod
     def _apply_constraint_func(func, x: np.array) -> float:
