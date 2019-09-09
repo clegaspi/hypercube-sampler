@@ -51,7 +51,7 @@ class SamplerTest(unittest.TestCase):
         step_vector = step_vector / np.linalg.norm(step_vector)
         mag = 0.2
 
-        next_pt = Sampler._step_to_next_point(current_pt, step_vector, mag)
+        next_pt = Sampler._get_new_point_after_step(current_pt, step_vector, mag)
         self.assertTrue(np.allclose(next_pt, [0.5, 0.7]))
 
     def test_apply_constraint_to_step_candidate(self):
