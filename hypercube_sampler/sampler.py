@@ -9,7 +9,7 @@ from hypercube_sampler.constraints import Constraint
 
 class Sampler:
     """Draws random samples from feasible region for constraint problem on unit hypercube"""
-    def __init__(self, constraint: Constraint, step_tol=1e-8):
+    def __init__(self, constraint: Constraint, step_tol: float = 1e-8):
         """
         Build sampler object.
 
@@ -23,7 +23,15 @@ class Sampler:
         self._current_pt = np.array(constraint.get_example())
 
     @classmethod
-    def from_constraint_file(cls, input_file, step_tol=1e-8):
+    def from_constraint_file(cls, input_file: str, step_tol: float = 1e-8):
+        """
+        Create sampler directly from constraint input file
+
+        :param input_file: path to constraint definition file
+        :param step_tol: magnitude tolerance for step size. If step is smaller
+            than the magnitude, will be considered the same point.
+        :return: Sampler object built from constraint definition
+        """
         return cls(Constraint(input_file), step_tol=step_tol)
 
     def sample(self, n_samples: int) -> list:
