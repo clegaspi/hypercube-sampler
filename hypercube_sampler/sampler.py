@@ -20,7 +20,7 @@ class Sampler:
         self.constraint = constraint
         self.step_tol = step_tol
         self._constraint_funcs = self.constraint.get_constraint_funcs()
-        self._current_pt = constraint.get_example()
+        self._current_pt = np.array(constraint.get_example())
 
     @classmethod
     def from_constraint_file(cls, input_file, step_tol=1e-8):
