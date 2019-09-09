@@ -15,16 +15,22 @@ within the feasible region. If no such step size exists, then a new
 direction is selected. Once a valid direction and step size is found, 
 the algorithm steps to the new point and process is repeated.
 
+The implementation was created to be conscious of memory. The sampler
+can be iterated so that points are generated on the fly instead of
+being stored. However, the `sample(n)` function does return
+a list with `n` points for convenience.
+
+Additionally, if the constraint file does not supply a valid point
+within the feasible region, the sampler will attempt to find a valid
+point automatically.
+
 Currently, the algorithm only searches for valid step sizes such that
 it does not step over any region along the selected direction that
 violates the constraints. This algorithm could be improved by 
 considering step sizes which may step over those regions and consider
 all valid locations along that direction within the unit hypercube.
 
-The implementation was created to be conscious of memory. The sampler
-can be iterated so that points are generated on the fly instead of
-being stored. However, the `sample(n)` function does return
-a list with `n` points for convenience.
+
 
 ### Installation
 - Clone repository
