@@ -184,7 +184,7 @@ class Sampler:
             Sampler._get_new_point_after_step(current_point, step_vector, magnitude)
         )
 
-    def _is_valid_point(self, point: np.array):
+    def _is_valid_point(self, point: np.array) -> bool:
         """
         Determines if a selected point is on the hypercube and
         meets constraints.
